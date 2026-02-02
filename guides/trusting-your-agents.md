@@ -47,9 +47,15 @@ With validation hooks in place:
 ```yaml
 ---
 hooks:
-  post_tool_use:
+  PostToolUse:
     - matcher: Bash
-      command: python ./validator.py
+      hooks:
+        - type: command
+          command: uv run ./validator.py
+  Stop:
+    - hooks:
+        - type: command
+          command: uv run ./build-validator.py
 ---
 ```
 
@@ -72,16 +78,59 @@ hooks:
 
 | Area | Hook Type | Example |
 |------|-----------|---------|
-| Tests | PostToolUse on Bash | Run tests after build |
+| Tests | PostToolUse on Bash | Validate test results |
+| Build | Stop | Verify build artifacts exist |
 | Security | PreToolUse on Bash | Block dangerous commands |
 | Format | PostToolUse on Write | Validate file format |
-| Screenshots | PostToolUse on Write | Log visual captures |
+
+## Blocking vs Informational Hooks
+
+**Informational hooks** report but don't stop:
+```python
+# Always continues, just logs
+print(json.dumps({"continue": True}))
+```
+
+**Blocking hooks** can stop execution:
+```python
+# Block the agent - it will receive feedback and retry
+print(json.dumps({
+    "decision": "block",
+    "reason": "Tests failed: 3 assertions failed"
+}))
+
+# Allow - empty object means success
+print(json.dumps({}))
+```
+
+## The Self-Correction Loop
+
+This is the key pattern that makes agents trustworthy:
+
+```
+Agent does work
+      ↓
+Hook validates output
+      ↓
+BLOCKED with feedback ←─────┐
+      ↓                      │
+Agent receives error message │
+      ↓                      │
+Agent fixes the issue        │
+      ↓                      │
+Hook validates again ────────┘
+      ↓
+PASS → Work complete
+```
+
+The agent **cannot finish** until validation passes. This creates self-correcting behavior.
 
 ## Setting It Up
 
 1. **Start with security** (Module 07 covers this)
-2. **Add test validation** (this module's auto-test-runner)
-3. **Add visual logging** (screenshot capture logging)
+2. **Add test validation** (this module's `test-validator.py`)
+3. **Add build validation** (this module's `build-validator.py`)
+4. **Check logs** (validators write to `validators/*.log`)
 
 ## Peace of Mind
 
@@ -92,3 +141,51 @@ Once hooks are configured:
 - You can focus on higher-level tasks
 
 **This is the power of validation hooks: Trust, but verify automatically.**
+
+## Validator Script Pattern
+
+All validators follow this structure (using `uv run` for dependency management):
+
+```python
+#!/usr/bin/env -S uv run --script
+# /// script
+# requires-python = ">=3.11"
+# dependencies = []
+# ///
+import json
+import sys
+from pathlib import Path
+from datetime import datetime
+
+LOG_FILE = Path(__file__).parent / "validator-name.log"
+
+def log(message: str):
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    with open(LOG_FILE, "a") as f:
+        f.write(f"[{timestamp}] {message}\n")
+
+def main():
+    # Read hook input from stdin
+    hook_input = json.loads(sys.stdin.read())
+
+    errors = []
+    # ... validation logic ...
+
+    if errors:
+        # BLOCK - agent receives feedback
+        print(json.dumps({
+            "decision": "block",
+            "reason": "\\n".join(errors)
+        }))
+    else:
+        # PASS - empty object
+        print(json.dumps({}))
+
+if __name__ == "__main__":
+    main()
+```
+
+This pattern ensures:
+- **Logging** for debugging (check `validators/*.log`)
+- **JSON output** for Claude Code to parse
+- **Dependencies** embedded in script (no pip install needed)

@@ -1,4 +1,5 @@
 ---
+name: validated-builder
 description: Build features with automatic validation - demonstrates self-validating agent pattern
 model: sonnet
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep

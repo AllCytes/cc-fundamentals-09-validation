@@ -32,6 +32,14 @@ gh repo create cc-fundamentals-09-validation --public --source=. --remote=origin
 
 ## Quick Start
 
+### Demo: Visual Validation with Playwright
+See the complete visual validation workflow in action:
+```
+/EA-demo-visual-setup     # One-time: install demo app
+/EA-demo-visual           # Run the visual validation demo
+```
+
+### Standard Validation Workflow
 1. Run `/EA-install` to install validation components
 2. Use `/EA-validate` to run tests
 3. Use `/EA-visual-verify <url>` to capture screenshots
@@ -42,6 +50,9 @@ gh repo create cc-fundamentals-09-validation --public --source=. --remote=origin
 
 | Command | Purpose |
 |---------|---------|
+| `/EA-demo-visual-setup` | Install visual demo app (one-time) |
+| `/EA-demo-visual` | Run complete visual validation demo |
+| `/EA-screenshot-compare` | Quick screenshot utility |
 | `/EA-validate` | Run tests and checks |
 | `/EA-visual-verify` | Capture screenshots |
 | `/EA-retrospective` | Session analysis |
@@ -55,6 +66,8 @@ gh repo create cc-fundamentals-09-validation --public --source=. --remote=origin
 │   ├── commands/          # All EA-* commands
 │   ├── hooks/validators/  # Auto-test-runner hook
 │   └── agents/            # Validated builder agent
+├── demo-project/          # Test-driven demo (Node.js library)
+├── demo-app/              # Visual validation demo (Vite app)
 ├── guides/                # Documentation
 ├── validation/screenshots/ # Screenshot storage
 ├── docs/retrospectives/   # Session retrospectives

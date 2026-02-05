@@ -2,16 +2,6 @@
 description: Build features with automatic validation - demonstrates self-validating agent pattern
 model: sonnet
 allowed-tools: Bash, Read, Write, Edit, Glob, Grep
-hooks:
-  PostToolUse:
-    - matcher: Bash
-      hooks:
-        - type: command
-          command: uv run "${CLAUDE_PROJECT_DIR}/.claude/hooks/validators/test-validator.py"
-  Stop:
-    - hooks:
-        - type: command
-          command: uv run "${CLAUDE_PROJECT_DIR}/.claude/hooks/validators/build-validator.py"
 ---
 
 # Validated Builder Agent
@@ -94,3 +84,38 @@ This agent uses two validators:
 | `build-validator.py` | Stop | Blocks if build artifacts missing |
 
 Both validators log to `.claude/hooks/validators/*.log` for debugging.
+
+## Required Hook Configuration
+
+The validation hooks must be configured in your project's `.claude/settings.json` (not in agent frontmatter). Add the following to your settings:
+
+```json
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run \"${CLAUDE_PROJECT_DIR}/.claude/hooks/validators/test-validator.py\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "uv run \"${CLAUDE_PROJECT_DIR}/.claude/hooks/validators/build-validator.py\""
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+Use the `/EA-install` command to set this up automatically.

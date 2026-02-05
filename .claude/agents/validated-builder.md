@@ -8,14 +8,12 @@ hooks:
     - matcher: "Bash"
       hooks:
         - type: command
-          command: >-
-            uv run $CLAUDE_PROJECT_DIR/.claude/hooks/validators/test-validator.py
+          command: uv run .claude/hooks/validators/test-validator.py
   Stop:
     - matcher: ""
       hooks:
         - type: command
-          command: >-
-            uv run $CLAUDE_PROJECT_DIR/.claude/hooks/validators/build-validator.py
+          command: uv run .claude/hooks/validators/build-validator.py
 ---
 
 # Validated Builder Agent

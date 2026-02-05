@@ -24,7 +24,7 @@ LOG_FILE = Path(__file__).parent / "build-validator.log"
 def log(message: str):
     """Append timestamped message to log file."""
     timestamp = datetime.now().strftime("%H:%M:%S")
-    with open(LOG_FILE, "a") as f:
+    with open(LOG_FILE, "a", encoding="utf-8") as f:
         f.write(f"[{timestamp}] {message}\n")
 
 
@@ -81,7 +81,7 @@ def main():
     if package_json.exists():
         try:
             import json as json_lib
-            with open(package_json) as f:
+            with open(package_json, encoding="utf-8") as f:
                 pkg = json_lib.load(f)
             scripts = pkg.get("scripts", {})
             if "build" in scripts:
